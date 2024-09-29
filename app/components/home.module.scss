@@ -40,6 +40,7 @@
 .sidebar {
   top: 0;
   width: var(--sidebar-width);
+  width: 375px;
   box-sizing: border-box;
   padding: 20px;
   background-color: var(--second);
@@ -140,6 +141,21 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+.sidebar-header2 {
+  display: flex;
+  align-items: center;
+  .sidebar-logo {
+    width: 201px;
+    height: 64px;
+  }
+  span {
+    flex: 1;
+    color: #1b2559;
+    font-family: Poppins;
+    font-size: 26px;
+    font-weight: 700;
+  }
 }
 
 .sidebar-logo {

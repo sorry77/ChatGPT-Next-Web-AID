@@ -17,6 +17,5 @@ export function useAllModels() {
     configStore.customModels,
     configStore.models,
   ]);
-
   return models;
 }

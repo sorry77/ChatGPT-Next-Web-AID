@@ -18,9 +18,9 @@ import CopyIcon from "../icons/copy.svg";
 import SpeakIcon from "../icons/speak.svg";
 import SpeakStopIcon from "../icons/speak-stop.svg";
 import LoadingIcon from "../icons/three-dots.svg";
+import TranslateIcon from "../icons/translate.svg";
 import LoadingButtonIcon from "../icons/loading.svg";
 import PromptIcon from "../icons/prompt.svg";
-import MaskIcon from "../icons/mask.svg";
 import MaxIcon from "../icons/max.svg";
 import MinIcon from "../icons/min.svg";
 import ResetIcon from "../icons/reload.svg";
@@ -32,14 +32,12 @@ import EditIcon from "../icons/rename.svg";
 import ConfirmIcon from "../icons/confirm.svg";
 import CloseIcon from "../icons/close.svg";
 import CancelIcon from "../icons/cancel.svg";
-import ImageIcon from "../icons/image.svg";
 
 import LightIcon from "../icons/light.svg";
 import DarkIcon from "../icons/dark.svg";
 import AutoIcon from "../icons/auto.svg";
 import BottomIcon from "../icons/bottom.svg";
 import StopIcon from "../icons/pause.svg";
-import RobotIcon from "../icons/robot.svg";
 import SizeIcon from "../icons/size.svg";
 import QualityIcon from "../icons/hd.svg";
 import StyleIcon from "../icons/palette.svg";
@@ -57,7 +55,6 @@ import {
   Theme,
   useAppConfig,
   DEFAULT_TOPIC,
-  ModelType,
   usePluginStore,
 } from "../store";
 
@@ -570,13 +567,13 @@ export function ChatActions(props: {
         />
       )}
 
-      {showUploadImage && (
+      {/* {showUploadImage && (
         <ChatAction
           onClick={props.uploadImage}
           text={Locale.Chat.InputActions.UploadImage}
           icon={props.uploading ? <LoadingButtonIcon /> : <ImageIcon />}
         />
-      )}
+      )} */}
       <ChatAction
         onClick={nextTheme}
         text={Locale.Chat.InputActions.Theme[theme]}
@@ -599,13 +596,13 @@ export function ChatActions(props: {
         icon={<PromptIcon />}
       />
 
-      <ChatAction
+      {/* <ChatAction
         onClick={() => {
           navigate(Path.Masks);
         }}
         text={Locale.Chat.InputActions.Masks}
         icon={<MaskIcon />}
-      />
+      /> */}
 
       <ChatAction
         text={Locale.Chat.InputActions.Clear}
@@ -622,7 +619,7 @@ export function ChatActions(props: {
         }}
       />
 
-      <ChatAction
+      {/* <ChatAction
         onClick={() => setShowModelSelector(true)}
         text={currentModelName}
         icon={<RobotIcon />}
@@ -660,7 +657,7 @@ export function ChatActions(props: {
             }
           }}
         />
-      )}
+      )} */}
 
       {isDalle3(currentModel) && (
         <ChatAction
@@ -809,6 +806,8 @@ export function EditMessageModal(props: { onClose: () => void }) {
             icon={<ConfirmIcon />}
             key="ok"
             onClick={() => {
+              console.log("session.messages", session.messages);
+              console.log("messages", messages);
               chatStore.updateCurrentSession(
                 (session) => (session.messages = messages),
               );
@@ -1508,6 +1507,65 @@ function _Chat() {
   // 快捷键 shortcut keys
   const [showShortcutKeyModal, setShowShortcutKeyModal] = useState(false);
 
+  // 翻译
+  const [translateMessage, setTranslateMessage] = useState<
+    RenderMessage | undefined
+  >(undefined);
+  const onTranslate = async ([targetLan]: string[]) => {
+    if (!translateMessage) return;
+    showToast("正在翻译");
+    const content = getMessageTextContent(translateMessage);
+    console.log("content", content);
+    let result = "";
+    const response = await fetch("/api/alibaba/v1/llm_service/translate", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        to_lan: targetLan,
+        words: content,
+      }),
+    });
+    // 检查响应状态
+    if (!response.ok || !response.body) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    // 获取响应的流
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+
+    let done = false;
+
+    while (!done) {
+      // 读取流中的数据
+      const { value, done: streamDone } = await reader.read();
+      done = streamDone;
+
+      // 解码流中的数据
+      if (value) {
+        const parseString = decoder.decode(value, { stream: !done });
+        const matchList = parseString.match(/"answer":([^}]+)/g);
+        if (!matchList) return;
+        const contentList = matchList?.map((s) =>
+          s.replace(/^"answer": "/, "").replace(/"$/, ""),
+        );
+        const contentString = contentList?.join("");
+        result += contentString;
+        // console.log("result", result);
+
+        chatStore.updateCurrentSession((session) => {
+          const m = session.mask.context
+            .concat(session.messages)
+            .find((m) => m.id === translateMessage.id);
+          if (m) {
+            m.content = result;
+          }
+        });
+      }
+    }
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: any) => {
       // 打开新聊天 command + shift + o
@@ -1738,7 +1796,8 @@ function _Chat() {
                     </div>
                     {!isUser && (
                       <div className={styles["chat-model-name"]}>
-                        {message.model}
+                        {/* {message.model} */}
+                        AI-WUS
                       </div>
                     )}
 
@@ -1769,6 +1828,11 @@ function _Chat() {
                                 text={Locale.Chat.Actions.Pin}
                                 icon={<PinIcon />}
                                 onClick={() => onPinMessage(message)}
+                              />
+                              <ChatAction
+                                text={Locale.Chat.Actions.Translate}
+                                icon={<TranslateIcon />}
+                                onClick={() => setTranslateMessage(message)}
                               />
                               <ChatAction
                                 text={Locale.Chat.Actions.Copy}
@@ -1893,6 +1957,36 @@ function _Chat() {
         })}
       </div>
 
+      {Boolean(translateMessage) && (
+        <Selector
+          items={[
+            "汉语",
+            "英语",
+            "德语",
+            "日语",
+            "西班牙语",
+            "法语",
+            "阿拉伯语",
+            "韩语",
+            "俄罗斯语",
+            "印度斯坦语",
+            "越南语",
+            "意大利语",
+            "孟加拉语",
+            "葡萄牙语",
+            "斯瓦希里语",
+            "瑞典语",
+            "粤语",
+            "乌尔都语",
+            "印度尼西亚语",
+          ].map((m) => ({
+            title: m,
+            value: m,
+          }))}
+          onClose={() => setTranslateMessage(undefined)}
+          onSelection={onTranslate}
+        />
+      )}
       <div className={styles["chat-input-panel"]}>
         <PromptHints prompts={promptHints} onPromptSelect={onPromptSelect} />
 

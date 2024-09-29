@@ -3,11 +3,11 @@ import EmojiPicker, {
   EmojiStyle,
   Theme as EmojiTheme,
 } from "emoji-picker-react";
+import Image from "next/image";
 
 import { ModelType } from "../store";
 
-import BotIcon from "../icons/bot.svg";
-import BlackBotIcon from "../icons/black-bot.svg";
+import AvatarIcon from "../icons/avatar.png";
 
 export function getEmojiUrl(unified: string, style: EmojiStyle) {
   // Whoever owns this Content Delivery Network (CDN), I am using your CDN to serve emojis
@@ -38,9 +38,23 @@ export function Avatar(props: { model?: ModelType; avatar?: string }) {
       <div className="no-dark">
         {props.model?.startsWith("gpt-4") ||
         props.model?.startsWith("chatgpt-4o") ? (
-          <BlackBotIcon className="user-avatar" />
+          // <BlackBotIcon className="user-avatar" />
+          <Image
+            alt="logo"
+            width={30}
+            height={30}
+            style={{ borderRadius: 10, display: "block" }}
+            src={AvatarIcon}
+          />
         ) : (
-          <BotIcon className="user-avatar" />
+          // <BotIcon className="user-avatar" />
+          <Image
+            alt="logo"
+            width={30}
+            height={30}
+            style={{ borderRadius: 10, display: "block" }}
+            src={AvatarIcon}
+          />
         )}
       </div>
     );
