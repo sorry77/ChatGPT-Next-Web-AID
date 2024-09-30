@@ -178,6 +178,7 @@ export function SideBarHeader(props: {
       </div> */}
       <div className={styles["sidebar-header2"]}>
         <Image alt="logo" className={styles["sidebar-logo"]} src={LogoIcon} />
+        {/* <Image alt="logo" className={styles["sidebar-logo2"]} src={Logo2Icon} /> */}
         <span>AIWUS</span>
       </div>
       {children}

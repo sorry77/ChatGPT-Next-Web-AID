@@ -44,6 +44,7 @@
   box-sizing: border-box;
   padding: 20px;
   background-color: var(--second);
+  // background-color: #fff;
   display: flex;
   flex-direction: column;
   box-shadow: inset -2px 0px 2px 0px rgb(0, 0, 0, 0.05);
@@ -148,6 +149,10 @@
   .sidebar-logo {
     width: 201px;
     height: 64px;
+  }
+  .sidebar-logo2 {
+    height: 64px;
+    width: auto;
   }
   span {
     flex: 1;

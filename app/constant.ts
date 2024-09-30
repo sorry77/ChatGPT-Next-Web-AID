@@ -24,7 +24,7 @@ export const BYTEDANCE_BASE_URL = "https://ark.cn-beijing.volces.com";
 
 // export const ALIBABA_BASE_URL = "https://dashscope.aliyuncs.com/api/";
 // export const ALIBABA_BASE_URL = "http://172.18.75.221:5000/api/";
-export const ALIBABA_BASE_URL = "http://172.18.75.219:9000/api/";
+export const ALIBABA_BASE_URL = "http://8.218.217.51:9000/api/";
 
 export const TENCENT_BASE_URL = "https://hunyuan.tencentcloudapi.com";
 
